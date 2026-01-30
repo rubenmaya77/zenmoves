@@ -40,7 +40,7 @@ class NewsViewModel @Inject constructor(
     }
 
     private fun getFilms() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             newsRepository.getFilms()
                 .collectLatest { filmsResponse ->
                     _films.value = filmsResponse
@@ -50,7 +50,7 @@ class NewsViewModel @Inject constructor(
     }
 
     fun toggleFavorite(filmId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             newsRepository.toggleFavorite(filmId)
         }
     }
