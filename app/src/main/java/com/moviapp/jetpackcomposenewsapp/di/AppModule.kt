@@ -1,6 +1,7 @@
 package com.moviapp.jetpackcomposenewsapp.di
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import androidx.room.Room
 import com.moviapp.jetpackcomposenewsapp.data.AppConstants
 import com.moviapp.jetpackcomposenewsapp.data.api.ApiService
@@ -28,14 +29,20 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun providesRetrofit(): Retrofit {
-        val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+    fun providesRetrofit(@ApplicationContext context: Context): Retrofit {
+        val httpClient = OkHttpClient.Builder()
+
+        // Conditionally add logging interceptor only in debug builds
+        val isDebuggable = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        if (isDebuggable) {
+            val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
+            httpClient.addInterceptor(httpLoggingInterceptor)
         }
-        val httpClient = OkHttpClient().newBuilder().apply {
-            addInterceptor(httpLoggingInterceptor)
-        }
+
         httpClient.apply {
+            connectTimeout(60, TimeUnit.SECONDS) // Add connection timeout
             readTimeout(60, TimeUnit.SECONDS)
         }
         val moshi = Moshi.Builder()

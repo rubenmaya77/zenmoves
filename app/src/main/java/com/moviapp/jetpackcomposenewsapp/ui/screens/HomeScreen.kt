@@ -1,13 +1,13 @@
 package com.moviapp.jetpackcomposenewsapp.ui.screens
 
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,7 +30,7 @@ import com.moviapp.utilities.ResourceState
 
 const val TAG = "HOME_SCREEN"
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToFavorites: () -> Unit,
@@ -39,20 +39,6 @@ fun HomeScreen(
 
     val filmsResponse by newsViewModel.films.collectAsState()
     val favoriteIds by newsViewModel.favoriteFilmIds.collectAsState()
-
-    val pagerState = rememberPagerState(
-        initialPage = 0,
-        initialPageOffsetFraction = 0f
-    ) {
-        when (filmsResponse) {
-            is ResourceState.Success -> {
-                val films = (filmsResponse as ResourceState.Success).data
-                films.size
-            }
-
-            else -> 0
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -71,41 +57,39 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize(),
-                pageSize = PageSize.Fill,
-                pageSpacing = 10.dp
-            ) { page: Int ->
-                when (filmsResponse) {
-                    is ResourceState.Loading -> {
-                        Log.d(TAG, "Inside_Loading")
-                        Loader()
-                    }
+            when (filmsResponse) {
+                is ResourceState.Loading -> {
+                    Log.d(TAG, "Inside_Loading")
+                    Loader()
+                }
 
-                    is ResourceState.Success -> {
-                        val films = (filmsResponse as ResourceState.Success).data
-                        Log.d(TAG, "Inside_Success films=${films.size}")
+                is ResourceState.Success -> {
+                    val films = (filmsResponse as ResourceState.Success).data
+                    Log.d(TAG, "Inside_Success films=${films.size}")
 
-                        if (films.isNotEmpty()) {
-                            val film = films[page]
-                            val isFavorite = favoriteIds.contains(film.id)
-                            NewsRowComponent(
-                                film = film,
-                                isFavorite = isFavorite,
-                                onToggleFavorite = { newsViewModel.toggleFavorite(film.id) }
-                            )
-                        } else {
-                            EmptyStateComponent()
+                    if (films.isNotEmpty()) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            items(items = films, key = { it.id }) { film ->
+                                val isFavorite = favoriteIds.contains(film.id)
+                                NewsRowComponent(
+                                    film = film,
+                                    isFavorite = isFavorite,
+                                    onToggleFavorite = { newsViewModel.toggleFavorite(film.id) }
+                                )
+                            }
                         }
+                    } else {
+                        EmptyStateComponent()
                     }
+                }
 
-                    is ResourceState.Error -> {
-                        val response = (filmsResponse as ResourceState.Error)
-                        Log.d(TAG, "Inside_Error: $response")
-
-                    }
+                is ResourceState.Error -> {
+                    val response = (filmsResponse as ResourceState.Error)
+                    Log.d(TAG, "Inside_Error: $response")
                 }
             }
         }

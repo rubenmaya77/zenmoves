@@ -30,10 +30,11 @@ class NewsRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 emit(ResourceState.Success(response.body()!!))
             } else {
-                emit(ResourceState.Error("Error Fetching Films"))
+                val errorBody = response.errorBody()?.string()
+                emit(ResourceState.Error(errorBody ?: "Error Fetching Films"))
             }
-        }.catch {
-            emit(ResourceState.Error(it.localizedMessage ?: "Some Error in flow"))
+        }.catch { e ->
+            emit(ResourceState.Error(e.localizedMessage ?: "An unexpected error occurred."))
         }
     }
 
