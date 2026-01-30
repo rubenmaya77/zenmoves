@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+.idea/
+.agents/
+.gemini/
+.kiro/
+.windsurf/
+.kilocode/

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,7 +14,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -93,7 +99,11 @@ fun HeadingTextComponent(value: String, isCenterAligned: Boolean = false) {
 }
 
 @Composable
-fun NewsRowComponent(page: Int, film: Film) {
+fun NewsRowComponent(
+    film: Film,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -101,16 +111,30 @@ fun NewsRowComponent(page: Int, film: Film) {
             .background(Color.White),
     ) {
 
-        AsyncImage(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            model = film.movie_banner ?: film.image, contentDescription = "",
-            contentScale = ContentScale.Fit,
-            placeholder = painterResource(id = R.drawable.placeholder),
-            error = painterResource(id = R.drawable.placeholder)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .wrapContentHeight(),
+                model = film.movie_banner ?: film.image,
+                contentDescription = "",
+                contentScale = ContentScale.Fit,
+                placeholder = painterResource(id = R.drawable.placeholder),
+                error = painterResource(id = R.drawable.placeholder)
+            )
 
-        )
+            IconButton(onClick = onToggleFavorite) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = null,
+                    tint = if (isFavorite) Color.Red else Color.Gray
+                )
+            }
+        }
         Spacer(modifier = Modifier.size(20.dp))
         HeadingTextComponent(value = film.title)
         Spacer(modifier = Modifier.size(10.dp))
@@ -172,6 +196,6 @@ fun NewsRowComponentPreview() {
         director = "Hayao Miyazaki",
         release_date = "1988"
     )
-    NewsRowComponent(0, film)
+    NewsRowComponent(film = film, isFavorite = true, onToggleFavorite = {})
 }
 

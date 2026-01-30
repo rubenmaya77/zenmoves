@@ -9,7 +9,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,6 +25,16 @@ class NewsViewModel @Inject constructor(
         MutableStateFlow(ResourceState.Loading())
     val films: StateFlow<ResourceState<List<Film>>> = _films
 
+    val favoriteFilmIds: StateFlow<Set<String>> = newsRepository.favoriteFilmIds
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    val favoriteFilms: StateFlow<List<Film>> = combine(films, favoriteFilmIds) { filmsState, favoriteIds ->
+        when (filmsState) {
+            is ResourceState.Success -> filmsState.data.filter { favoriteIds.contains(it.id) }
+            else -> emptyList()
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     init {
         getFilms()
     }
@@ -33,6 +46,12 @@ class NewsViewModel @Inject constructor(
                     _films.value = filmsResponse
 
                 }
+        }
+    }
+
+    fun toggleFavorite(filmId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            newsRepository.toggleFavorite(filmId)
         }
     }
 

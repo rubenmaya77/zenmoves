@@ -1,15 +1,19 @@
 package com.moviapp.jetpackcomposenewsapp.di
 
+import android.content.Context
+import androidx.room.Room
 import com.moviapp.jetpackcomposenewsapp.data.AppConstants
 import com.moviapp.jetpackcomposenewsapp.data.api.ApiService
 import com.moviapp.jetpackcomposenewsapp.data.datasource.NewsDataSource
 import com.moviapp.jetpackcomposenewsapp.data.datasource.NewsDataSourceImpl
-import com.moviapp.jetpackcomposenewsapp.ui.repository.NewsRepository
+import com.moviapp.jetpackcomposenewsapp.data.local.AppDatabase
+import com.moviapp.jetpackcomposenewsapp.data.local.FavoritesDao
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -56,10 +60,19 @@ class AppModule {
         return NewsDataSourceImpl(apiService)
     }
 
+    @Provides
+    @Singleton
+    fun providesAppDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "app_database"
+        ).build()
+    }
 
     @Provides
     @Singleton
-    fun providesNewsRepository(newsDataSource: NewsDataSource):NewsRepository{
-        return NewsRepository(newsDataSource)
+    fun providesFavoritesDao(appDatabase: AppDatabase): FavoritesDao {
+        return appDatabase.favoritesDao()
     }
 }
