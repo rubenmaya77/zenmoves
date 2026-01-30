@@ -18,6 +18,7 @@ import com.moviapp.jetpackcomposenewsapp.ui.viewmodel.NewsViewModel
 @Composable
 fun FavoritesScreen(
     modifier: Modifier = Modifier,
+    onNavigateToDetail: (String) -> Unit,
     newsViewModel: NewsViewModel = hiltViewModel()
 ) {
     val favorites by newsViewModel.favoriteFilms.collectAsState()
@@ -34,7 +35,8 @@ fun FavoritesScreen(
                 NewsRowComponent(
                     film = film,
                     isFavorite = true,
-                    onToggleFavorite = { newsViewModel.toggleFavorite(film.id) }
+                    onToggleFavorite = { newsViewModel.toggleFavorite(film.id) },
+                    onArrowClick = { onNavigateToDetail(film.id) }
                 )
             }
         }

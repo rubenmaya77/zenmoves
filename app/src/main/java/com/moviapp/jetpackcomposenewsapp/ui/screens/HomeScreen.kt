@@ -34,6 +34,7 @@ const val TAG = "HOME_SCREEN"
 @Composable
 fun HomeScreen(
     onNavigateToFavorites: () -> Unit,
+    onNavigateToDetail: (String) -> Unit,
     newsViewModel: NewsViewModel = hiltViewModel()
 ) {
 
@@ -78,7 +79,8 @@ fun HomeScreen(
                                 NewsRowComponent(
                                     film = film,
                                     isFavorite = isFavorite,
-                                    onToggleFavorite = { newsViewModel.toggleFavorite(film.id) }
+                                    onToggleFavorite = { newsViewModel.toggleFavorite(film.id) },
+                                    onArrowClick = { onNavigateToDetail(film.id) }
                                 )
                             }
                         }
@@ -100,5 +102,5 @@ fun HomeScreen(
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(onNavigateToFavorites = {})
+    HomeScreen(onNavigateToFavorites = {}, onNavigateToDetail = {})
 }
